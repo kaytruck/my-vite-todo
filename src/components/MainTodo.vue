@@ -1,6 +1,8 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useTodoList } from '/src/util/useTodoList.js';
+import BaseButton from './BaseButton.vue';
+import ButtonAdd from './ButtonAdd.vue';
 
 const todoRef = ref('');
 const isEditRef = ref(false);
@@ -34,13 +36,17 @@ const changeCheck = (id) => {
 <template>
   <div class="box_input">
     <input
+      id="inp"
       type="text"
       class="todo_input"
       v-model="todoRef"
       placeholder="＋ TODOを入力"
     />
-    <button class="btn" @click="editTodo" v-if="isEditRef">変更</button>
-    <button class="btn" @click="addTodo" v-else>追加</button>
+    <BaseButton class="btn green" @on-click="editTodo" v-if="isEditRef"
+      >変更</BaseButton
+    >
+    <!-- <BaseButton class="btn blue" @on-click="addTodo" v-else>追加</BaseButton> -->
+    <ButtonAdd @add-click="addTodo" v-else />
   </div>
   <div class="box_list">
     <div class="todo_list" v-for="todo in todoListRef" :key="todo.id">
@@ -53,8 +59,12 @@ const changeCheck = (id) => {
         /><label>{{ todo.task }}</label>
       </div>
       <div class="btns">
-        <button class="btn green" @click="showTodo(todo.id)">編</button>
-        <button class="btn pink" @click="deleteTodo(todo.id)">削</button>
+        <BaseButton class="btn green" @on-click="showTodo(todo.id)"
+          >編</BaseButton
+        >
+        <BaseButton class="btn pink" @on-click="deleteTodo(todo.id)"
+          >削</BaseButton
+        >
       </div>
     </div>
   </div>
