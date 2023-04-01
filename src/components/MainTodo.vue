@@ -3,49 +3,31 @@ import { ref } from 'vue';
 import { useTodoList } from '/src/util/useTodoList.js';
 
 const todoRef = ref('');
-const todoListRef = ref([]);
-const todoList = localStorage.todoList;
-todoListRef.value = todoList ? JSON.parse(todoList) : [];
+const isEditRef = ref(false);
+const { todoListRef, add, show, edit, del, check, countFin } = useTodoList();
 
 const addTodo = () => {
-  let id = new Date().getTime();
-  todoListRef.value.push({ id: id, task: todoRef.value });
-  localStorage.todoList = JSON.stringify(todoListRef.value);
+  add(todoRef.value);
   todoRef.value = '';
 };
 
-const isEditRef = ref(false);
-let editId = -1;
-
 const showTodo = (id) => {
-  const todo = todoListRef.value.find((todo) => todo.id === id);
-  todoRef.value = todo.task;
+  todoRef.value = show(id);
   isEditRef.value = true;
-  editId = id;
 };
 
 const editTodo = () => {
-  const todo = todoListRef.value.find((todo) => todo.id === editId);
-  const idx = todoListRef.value.findIndex((todo) => todo.id === editId);
-
-  todo.task = todoRef.value;
-  todoListRef.value.splice(idx, 1, todo);
-  localStorage.todoList = JSON.stringify(todoListRef.value);
+  edit(todoRef.value);
   isEditRef.value = false;
-  editId = -1;
   todoRef.value = '';
 };
 
 const deleteTodo = (id) => {
-  // const todo = todoListRef.value.find((todo) => todo.id === id);
-  // const idx = todoListRef.value.findIndex((todo) => todo.id === id);
-  const { todo, idx } = useTodoList(id);
+  del(id);
+};
 
-  const delMsg = '[' + todo.task + ']を削除しますか？';
-  if (!confirm(delMsg)) return;
-
-  todoListRef.value.splice(idx, 1);
-  localStorage.todoList = JSON.stringify(todoListRef.value);
+const changeCheck = (id) => {
+  check(id);
 };
 </script>
 
@@ -59,31 +41,26 @@ const deleteTodo = (id) => {
     />
     <button class="btn" @click="editTodo" v-if="isEditRef">変更</button>
     <button class="btn" @click="addTodo" v-else>追加</button>
-    <!-- <button class="btn" @click="editTodo" v-show="isEditRef">変更</button>
-    <button class="btn" @click="addTodo" v-show="!isEditRef">追加</button> -->
   </div>
   <div class="box_list">
     <div class="todo_list" v-for="todo in todoListRef" :key="todo.id">
-      <div class="todo">
-        <input type="checkbox" class="check" /><label>{{ todo.task }}</label>
+      <div class="todo" :class="{ fin: todo.checked }">
+        <input
+          type="checkbox"
+          class="check"
+          @change="changeCheck(todo.id)"
+          :checked="todo.checked"
+        /><label>{{ todo.task }}</label>
       </div>
       <div class="btns">
         <button class="btn green" @click="showTodo(todo.id)">編</button>
         <button class="btn pink" @click="deleteTodo(todo.id)">削</button>
       </div>
     </div>
-    <!-- <div class="todo_list">
-      <div class="todo">
-        <input type="checkbox" class="check" /><label>TODO02</label>
-      </div>
-      <div class="btns">
-        <button class="btn green">編</button>
-        <button class="btn pink">削</button>
-      </div>
-    </div> -->
-    <!-- <div v-for="(v, i) in todoExample">
-      <p>{{ i }}.{{ v }}</p>
-    </div> -->
+  </div>
+  <div class="finCount">
+    <span>完了：{{ countFin }}、</span>
+    <span>未完了：{{ todoListRef.length - countFin }}</span>
   </div>
 </template>
 
@@ -147,5 +124,16 @@ const deleteTodo = (id) => {
 }
 .pink {
   background-color: #ff4081;
+}
+
+.fin {
+  text-decoration: line-through;
+  background-color: #ddd;
+  color: #777;
+}
+
+.finCount {
+  margin-top: 8px;
+  font-size: 0.8em;
 }
 </style>
